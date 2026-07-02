@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-zinc-50 font-sans antialiased selection:bg-indigo-500/20 selection:text-indigo-400 overflow-x-hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  body.light {
+    @apply bg-zinc-50 text-zinc-900;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors;
+}
+
+.light ::-webkit-scrollbar-thumb {
+  @apply bg-zinc-300 hover:bg-zinc-400;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  @apply bg-zinc-900/60 border border-zinc-800/40 backdrop-blur-lg shadow-xl shadow-black/20;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.light .glass-panel {
+  @apply bg-white/60 border border-white/60 backdrop-blur-lg shadow-xl shadow-zinc-200/25;
+}
+
+.glass-card-hover {
+  @apply hover:border-zinc-700/80 hover:bg-zinc-900/80 hover:shadow-2xl hover:shadow-indigo-500/5 duration-300 transition-all;
+}
+
+.light .glass-card-hover {
+  @apply hover:border-zinc-300 hover:bg-white hover:shadow-lg hover:shadow-zinc-300/35;
+}
+
+/* Custom Grid Heatmap Cell Sizes */
+.heatmap-cell {
+  aspect-ratio: 1;
+  width: 100%;
+  min-width: 10px;
+  max-width: 14px;
+}
+
+/* Custom Checkbox styles */
+.custom-checkbox {
+  @apply w-5 h-5 rounded border border-zinc-700 flex items-center justify-center cursor-pointer transition-all duration-200 select-none;
+}
+
+.light .custom-checkbox {
+  @apply border-zinc-300;
+}
+
+/* Remove default focus outlines and use custom ones */
+*:focus-visible {
+  @apply outline-none ring-2 ring-indigo-500 ring-offset-2 ring-offset-zinc-950;
+}
+
+.light *:focus-visible {
+  @apply ring-offset-white;
+}
+
+/* Shimmer animation for Skeleton */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.1) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  content: '';
+  animation: shimmer 1.5s infinite;
+}
+
+.light .animate-shimmer::after {
+  background-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.03) 20%,
+    rgba(0, 0, 0, 0.06) 60%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
