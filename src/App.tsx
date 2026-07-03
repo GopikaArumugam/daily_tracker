@@ -15,6 +15,7 @@ import { Goals } from './pages/Goals';
 import { LeetCode } from './pages/LeetCode';
 import { Analytics } from './pages/Analytics';
 import { Calendar } from './pages/Calendar';
+import { Finance } from './pages/Finance';
 import { Notes } from './pages/Notes';
 import { Settings } from './pages/Settings';
 
@@ -27,6 +28,7 @@ const AppContent: React.FC = () => {
   // Global modals and panels state
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isFabModalOpen, setIsFabModalOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // FAB Task Inputs
   const [fabTaskText, setFabTaskText] = useState('');
@@ -80,6 +82,8 @@ const AppContent: React.FC = () => {
         return <Analytics />;
       case 'calendar':
         return <Calendar />;
+      case 'finance':
+        return <Finance />;
       case 'notes':
         return <Notes />;
       case 'settings':
@@ -97,12 +101,19 @@ const AppContent: React.FC = () => {
       <div className="absolute top-[40%] right-[5%] w-[450px] h-[450px] rounded-full bg-pink-100/40 dark:bg-pink-950/15 blur-3xl pointer-events-none z-0" />
 
       {/* Sidebar - left */}
-      <Sidebar onOpenCommandPalette={() => setIsPaletteOpen(true)} />
+      <Sidebar 
+        onOpenCommandPalette={() => setIsPaletteOpen(true)} 
+        isSidebarOpen={isSidebarOpen} 
+        setIsSidebarOpen={setIsSidebarOpen} 
+      />
 
       {/* Main Container - right */}
-      <div className="flex-1 flex flex-col pl-64 min-w-0">
+      <div className="flex-1 flex flex-col lg:pl-64 pl-0 min-w-0 relative z-10">
         {/* Top Header Navigation */}
-        <Header onOpenCommandPalette={() => setIsPaletteOpen(true)} />
+        <Header 
+          onOpenCommandPalette={() => setIsPaletteOpen(true)} 
+          setIsSidebarOpen={setIsSidebarOpen} 
+        />
 
         {/* Scrollable Workspace */}
         <main className="flex-1 p-8 overflow-y-auto overflow-x-hidden">

@@ -61,6 +61,16 @@ export interface StudyLog {
   subject: string;
 }
 
+export interface Transaction {
+  id: string;
+  title: string;
+  amount: number;
+  type: 'expense' | 'income';
+  category: 'Food' | 'Dessert' | 'Snacks' | 'Fees' | 'Gifts' | 'Essentials' | 'Other' | 'Income';
+  date: string; // YYYY-MM-DD
+  createdAt: string;
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -172,6 +182,10 @@ interface DashboardContextProps {
   settings: Settings;
   updateSettings: (settings: Partial<Settings>) => void;
   
+  transactions: Transaction[];
+  addTransaction: (title: string, amount: number, type: 'expense' | 'income', category: Transaction['category'], date: string) => void;
+  deleteTransaction: (id: string) => void;
+  
   getDayStats: (dateStr: string) => DayStats;
   
   importData: (jsonData: string) => boolean;
@@ -194,6 +208,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [studyLogs, setStudyLogs] = useLocalStorage<StudyLog[]>('dashboard_study_logs_v2', initialStudyLogs);
   const [notes, setNotes] = useLocalStorage<Note[]>('dashboard_notes_v2', initialNotes);
   const [settings, setSettings] = useLocalStorage<Settings>('dashboard_settings_v2', initialSettings);
+  const [transactions, setTransactions] = useLocalStorage<Transaction[]>('dashboard_transactions_v2', []);
 
   // Automatic migration check to clear out old mock data
   useEffect(() => {
@@ -326,6 +341,24 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       result.splice(endIndex, 0, removed);
       return result;
     });
+  };
+
+  // Finance & Transaction actions
+  const addTransaction = (title: string, amount: number, type: 'expense' | 'income', category: Transaction['category'], date: string) => {
+    const newTx: Transaction = {
+      id: 'tx_' + Math.random().toString(36).substring(2, 11),
+      title: title.trim(),
+      amount: Math.max(0, amount),
+      type,
+      category,
+      date,
+      createdAt: new Date().toISOString()
+    };
+    setTransactions(prev => [newTx, ...prev]);
+  };
+
+  const deleteTransaction = (id: string) => {
+    setTransactions(prev => prev.filter(tx => tx.id !== id));
   };
 
   // Daily goals actions
@@ -694,7 +727,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       leetCodeStats,
       studyLogs,
       notes,
-      settings
+      settings,
+      transactions
     };
     return JSON.stringify(payload, null, 2);
   };
@@ -711,6 +745,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (data.studyLogs) setStudyLogs(data.studyLogs);
       if (data.notes) setNotes(data.notes);
       if (data.settings) setSettings(data.settings);
+      if (data.transactions) setTransactions(data.transactions);
       return true;
     } catch (e) {
       console.error('Failed to import data:', e);
@@ -728,6 +763,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setStudyLogs(initialStudyLogs);
     setNotes(initialNotes);
     setSettings(initialSettings);
+    setTransactions([]);
   };
 
   return (
@@ -772,6 +808,9 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         settings,
         updateSettings,
         getDayStats,
+        transactions,
+        addTransaction,
+        deleteTransaction,
         importData,
         exportData,
         resetToFactory

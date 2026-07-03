@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useDashboard } from '../context/DashboardContext';
-import { Sun, Moon, Search, Bell } from 'lucide-react';
+import { Sun, Moon, Search, Bell, Menu } from 'lucide-react';
 interface HeaderProps {
   onOpenCommandPalette: () => void;
+  setIsSidebarOpen: (open: boolean) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette }) => {
+export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette, setIsSidebarOpen }) => {
   const { settings, updateSettings, tasks } = useDashboard();
   
   const [greeting, setGreeting] = useState('Hello');
@@ -54,15 +55,24 @@ export const Header: React.FC<HeaderProps> = ({ onOpenCommandPalette }) => {
   ).length;
 
   return (
-    <header className="h-16 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/40 sticky top-0 right-0 left-0 z-10 flex items-center justify-between px-8 transition-colors duration-300">
-      {/* Date & Greeting */}
-      <div className="flex flex-col">
-        <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100 leading-tight">
-          {greeting}, Gopika 👋
-        </h2>
-        <span className="text-[11px] text-zinc-500 font-medium">
-          {formatDate(currentTime)}
-        </span>
+    <header className="h-16 border-b border-zinc-200 bg-white/80 backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/40 sticky top-0 right-0 left-0 z-10 flex items-center justify-between px-6 sm:px-8 transition-colors duration-300">
+      {/* Menu & Date & Greeting */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="lg:hidden p-2 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:bg-zinc-800 dark:text-zinc-450 transition-colors"
+          title="Open Menu"
+        >
+          <Menu size={18} />
+        </button>
+        <div className="flex flex-col">
+          <h2 className="text-sm font-semibold text-zinc-850 dark:text-zinc-100 leading-tight">
+            {greeting}, Gopika 👋
+          </h2>
+          <span className="text-[11px] text-zinc-550 font-medium">
+            {formatDate(currentTime)}
+          </span>
+        </div>
       </div>
 
       {/* Global Actions */}
