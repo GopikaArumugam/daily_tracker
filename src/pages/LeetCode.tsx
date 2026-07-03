@@ -4,6 +4,17 @@ import { getAccentColor, type AccentColor } from '../utils/theme';
 import { Modal } from '../components/ui/Modal';
 import { showToast } from '../components/ui/Toast';
 import { 
+  ComposedChart,
+  Bar, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+import { 
   Code2, 
   Plus, 
   Trash2, 
@@ -56,6 +67,48 @@ export const LeetCode: React.FC = () => {
   const yesterdaySolved = leetCodeStats.history[yesterdayStr] || 0;
   const diffCount = todaySolved - yesterdaySolved;
   const diffSign = diffCount >= 0 ? `+${diffCount}` : `${diffCount}`;
+
+  // Compile LeetCode cumulative and daily trend data starting from July 1, 2026
+  const leetCodeTrendData = [];
+  const startTrendDate = new Date('2026-07-01');
+  const todayTrendDate = new Date();
+  
+  // Calculate base solved count (Total Solved - sum of solves recorded on/after July 1st)
+  let loggedSolvesSum = 0;
+  Object.entries(leetCodeStats.history).forEach(([dateStr, count]) => {
+    if (dateStr >= '2026-07-01') {
+      loggedSolvesSum += count;
+    }
+  });
+  
+  let baseSolves = leetCodeStats.totalSolved - loggedSolvesSum;
+  if (baseSolves < 0) baseSolves = 0;
+
+  let tempDate = new Date(startTrendDate);
+  let cumulativeSolves = baseSolves;
+
+  // Fallback to today if user's local date is set before July 1st, 2026 to avoid infinite loop
+  if (tempDate > todayTrendDate) {
+    tempDate = new Date(todayTrendDate);
+  }
+
+  while (tempDate <= todayTrendDate) {
+    const dateStr = tempDate.toISOString().split('T')[0];
+    const dailyCount = leetCodeStats.history[dateStr] || 0;
+    cumulativeSolves += dailyCount;
+
+    leetCodeTrendData.push({
+      name: tempDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      date: dateStr,
+      dailySolved: dailyCount,
+      totalSolved: cumulativeSolves
+    });
+
+    tempDate.setDate(tempDate.getDate() + 1);
+  }
+
+  const chartGridColor = settings.theme === 'dark' ? '#1e293b' : '#e2e8f0';
+  const chartTextColor = settings.theme === 'dark' ? '#94a3b8' : '#64748b';
 
   // Log Solve Submission
   const handleSolveSubmit = (e: React.FormEvent) => {
@@ -215,6 +268,36 @@ export const LeetCode: React.FC = () => {
               {Object.entries(leetCodeStats.history).filter(([d]) => new Date(d) > new Date(Date.now() - 7 * 86400000)).reduce((a, b) => a + b[1], 0)}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* LeetCode Solves Trend Chart */}
+      <div className="glass-panel p-5 rounded-2xl space-y-4">
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">LeetCode Solved Trend (Since July 1st)</h3>
+          <p className="text-[11px] text-zinc-500">Daily solves and cumulative progress from July 1, 2026</p>
+        </div>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={leetCodeTrendData} margin={{ top: 10, right: -5, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+              <XAxis dataKey="name" stroke={chartTextColor} fontSize={10} />
+              <YAxis yAxisId="left" stroke={chartTextColor} fontSize={10} domain={['dataMin - 2', 'dataMax + 2']} />
+              <YAxis yAxisId="right" orientation="right" stroke={chartTextColor} fontSize={10} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: settings.theme === 'dark' ? '#0f172a' : '#ffffff',
+                  borderColor: settings.theme === 'dark' ? '#1e293b' : '#cbd5e1',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  color: settings.theme === 'dark' ? '#f8fafc' : '#0f172a'
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
+              <Bar yAxisId="right" dataKey="dailySolved" name="Daily Solved" fill="#f59e0b" radius={[3, 3, 0, 0]} maxBarSize={15} opacity={0.6} />
+              <Line yAxisId="left" type="monotone" dataKey="totalSolved" name="Cumulative Total" stroke="#eab308" strokeWidth={2.5} activeDot={{ r: 6 }} dot={{ strokeWidth: 2, r: 4 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
