@@ -163,8 +163,8 @@ interface DashboardContextProps {
   
   dailyGoalsHistory: { [date: string]: { completed: number; total: number } };
   leetCodeStats: LeetCodeStats;
-  logLeetCodeSolve: (count: number, difficulty: 'Easy' | 'Medium' | 'Hard') => void;
-  addLeetCodeNote: (problemId: string, title: string, difficulty: LeetCodeNote['difficulty'], note: string, forRevision: boolean) => void;
+  logLeetCodeSolve: (count: number, difficulty: 'Easy' | 'Medium' | 'Hard', dateStr?: string) => void;
+  addLeetCodeNote: (problemId: string, title: string, difficulty: LeetCodeNote['difficulty'], note: string, forRevision: boolean, dateStr?: string) => void;
   toggleLeetCodeRevision: (problemId: string) => void;
   deleteLeetCodeNote: (problemId: string) => void;
   incrementTopicProgress: (topic: string, amount: number) => void;
@@ -469,11 +469,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   // LeetCode actions
-  const logLeetCodeSolve = (count: number, difficulty: 'Easy' | 'Medium' | 'Hard') => {
-    const todayStr = getLocalDateString();
+  const logLeetCodeSolve = (count: number, difficulty: 'Easy' | 'Medium' | 'Hard', dateStr?: string) => {
+    const targetDateStr = dateStr || getLocalDateString();
     
     setLeetCodeStats(prev => {
-      const currentTodaySolved = prev.history[todayStr] || 0;
+      const currentTodaySolved = prev.history[targetDateStr] || 0;
       const newTodaySolved = Math.max(0, currentTodaySolved + count);
       
       const newEasy = difficulty === 'Easy' ? Math.max(0, prev.easySolved + count) : prev.easySolved;
@@ -500,26 +500,28 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         streak = Math.max(0, streak - 1);
       }
 
+      const isToday = targetDateStr === getLocalDateString();
+
       return {
         ...prev,
         totalSolved: newTotal,
         easySolved: newEasy,
         mediumSolved: newMedium,
         hardSolved: newHard,
-        currentStreak: streak,
-        longestStreak: Math.max(streak, prev.longestStreak),
-        dailyChallengeCompleted: true,
+        currentStreak: isToday ? streak : prev.currentStreak,
+        longestStreak: isToday ? Math.max(streak, prev.longestStreak) : prev.longestStreak,
+        dailyChallengeCompleted: isToday ? true : prev.dailyChallengeCompleted,
         history: {
           ...prev.history,
-          [todayStr]: newTodaySolved
+          [targetDateStr]: newTodaySolved
         },
         topicProgress: updatedTopicProgress
       };
     });
 
-    // Automatically check off "Solve LeetCode Daily" task if it exists for today
+    // Automatically check off "Solve LeetCode Daily" task if it exists for target date
     setTasks(prevTasks => prevTasks.map(t => {
-      if (t.dueDate === todayStr && t.text.toLowerCase().includes('leetcode')) {
+      if (t.dueDate === targetDateStr && t.text.toLowerCase().includes('leetcode')) {
         return { ...t, completed: true, completedAt: new Date().toISOString() };
       }
       return t;
@@ -527,7 +529,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     // Update LeetCode Daily goal if present
     setDailyGoals(prevGoals => prevGoals.map(g => {
-      if (g.title.toLowerCase().includes('leetcode')) {
+      if (g.title.toLowerCase().includes('leetcode') && g.createdAt === targetDateStr) {
         return { ...g, current: Math.min(g.target, g.current + count) };
       }
       return g;
@@ -542,7 +544,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
   };
 
-  const addLeetCodeNote = (problemId: string, title: string, difficulty: LeetCodeNote['difficulty'], note: string, forRevision: boolean) => {
+  const addLeetCodeNote = (problemId: string, title: string, difficulty: LeetCodeNote['difficulty'], note: string, forRevision: boolean, dateStr?: string) => {
     setLeetCodeStats(prev => ({
       ...prev,
       notes: {
@@ -552,7 +554,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           difficulty,
           note,
           forRevision,
-          date: getLocalDateString()
+          date: dateStr || getLocalDateString()
         }
       }
     }));

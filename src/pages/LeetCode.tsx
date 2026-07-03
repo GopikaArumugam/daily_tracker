@@ -45,6 +45,8 @@ export const LeetCode: React.FC = () => {
   const [noteDifficulty, setNoteDifficulty] = useState<'Easy' | 'Medium' | 'Hard'>('Medium');
   const [problemNote, setProblemNote] = useState('');
   const [forRevision, setForRevision] = useState(false);
+  const [solveDate, setSolveDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [noteDate, setNoteDate] = useState(() => new Date().toISOString().split('T')[0]);
 
   // Today and Yesterday dates
   const todayStr = new Date().toISOString().split('T')[0];
@@ -58,9 +60,10 @@ export const LeetCode: React.FC = () => {
   // Log Solve Submission
   const handleSolveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    logLeetCodeSolve(solveCount, solveDifficulty);
+    logLeetCodeSolve(solveCount, solveDifficulty, solveDate);
     setIsLogSolveOpen(false);
     setSolveCount(1);
+    setSolveDate(new Date().toISOString().split('T')[0]);
     showToast(`Logged +${solveCount} ${solveDifficulty} solved problems!`, 'success');
   };
 
@@ -69,10 +72,10 @@ export const LeetCode: React.FC = () => {
     e.preventDefault();
     if (!problemId.trim() || !problemTitle.trim() || !problemNote.trim()) return;
 
-    addLeetCodeNote(problemId, problemTitle, noteDifficulty, problemNote, forRevision);
+    addLeetCodeNote(problemId, problemTitle, noteDifficulty, problemNote, forRevision, noteDate);
     
     // Automatically log 1 problem solved under this difficulty if user checked it
-    logLeetCodeSolve(1, noteDifficulty);
+    logLeetCodeSolve(1, noteDifficulty, noteDate);
 
     // Reset
     setProblemId('');
@@ -80,6 +83,7 @@ export const LeetCode: React.FC = () => {
     setNoteDifficulty('Medium');
     setProblemNote('');
     setForRevision(false);
+    setNoteDate(new Date().toISOString().split('T')[0]);
     setIsAddNoteOpen(false);
     showToast(`Logged note for "${problemTitle}" and logged solve count!`, 'success');
   };
@@ -437,14 +441,13 @@ export const LeetCode: React.FC = () => {
         )}
       </div>
 
-      {/* Log solves modal */}
       <Modal
         isOpen={isLogSolveOpen}
         onClose={() => setIsLogSolveOpen(false)}
         title="Log Solved Problems"
       >
         <form onSubmit={handleSolveSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Number Solved</label>
               <input
@@ -458,7 +461,7 @@ export const LeetCode: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Difficulty</label>
+              <label className="text-[10px] uppercase font-bold text-zinc-550 tracking-wider">Difficulty</label>
               <select
                 value={solveDifficulty}
                 onChange={(e) => setSolveDifficulty(e.target.value as any)}
@@ -468,6 +471,17 @@ export const LeetCode: React.FC = () => {
                 <option value="Medium">Medium</option>
                 <option value="Hard">Hard</option>
               </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase font-bold text-zinc-550 tracking-wider">Date Solved</label>
+              <input
+                type="date"
+                required
+                value={solveDate}
+                onChange={(e) => setSolveDate(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border focus:outline-none focus:border-zinc-700 bg-zinc-100 border-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950"
+              />
             </div>
           </div>
 
@@ -513,7 +527,7 @@ export const LeetCode: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Difficulty</label>
               <select
@@ -527,6 +541,17 @@ export const LeetCode: React.FC = () => {
               </select>
             </div>
 
+            <div className="space-y-1">
+              <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Date Solved</label>
+              <input
+                type="date"
+                required
+                value={noteDate}
+                onChange={(e) => setNoteDate(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border focus:outline-none focus:border-zinc-700 bg-zinc-100 border-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950"
+              />
+            </div>
+
             <div className="flex items-center gap-2 pt-5">
               <input
                 id="revision-checkbox"
@@ -535,7 +560,7 @@ export const LeetCode: React.FC = () => {
                 onChange={(e) => setForRevision(e.target.checked)}
                 className="w-4 h-4 accent-rose-500 rounded border-zinc-800 bg-zinc-950 dark:border-zinc-800 dark:bg-zinc-950"
               />
-              <label htmlFor="revision-checkbox" className="text-xs text-zinc-400 font-semibold cursor-pointer select-none">
+              <label htmlFor="revision-checkbox" className="text-xs text-zinc-450 font-semibold cursor-pointer select-none">
                 Mark for Revision
               </label>
             </div>
