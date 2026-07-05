@@ -16,6 +16,7 @@ import { LeetCode } from './pages/LeetCode';
 import { Analytics } from './pages/Analytics';
 import { Calendar } from './pages/Calendar';
 import { Finance } from './pages/Finance';
+import { Focus } from './pages/Focus';
 import { Notes } from './pages/Notes';
 import { Settings } from './pages/Settings';
 
@@ -84,6 +85,8 @@ const AppContent: React.FC = () => {
         return <Calendar />;
       case 'finance':
         return <Finance />;
+      case 'focus':
+        return <Focus />;
       case 'notes':
         return <Notes />;
       case 'settings':

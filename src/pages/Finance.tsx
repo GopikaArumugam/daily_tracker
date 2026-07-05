@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export const Finance: React.FC = () => {
-  const { transactions, addTransaction, deleteTransaction, settings } = useDashboard();
+  const { transactions, addTransaction, deleteTransaction, settings, initialBalance, updateInitialBalance } = useDashboard();
   const accent = settings.accentColor as AccentColor;
 
   // Form states
@@ -22,6 +22,10 @@ export const Finance: React.FC = () => {
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [category, setCategory] = useState<Transaction['category']>('Food');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+
+  // Initial balance inline editor state
+  const [isEditingInitial, setIsEditingInitial] = useState(false);
+  const [initialInput, setInitialInput] = useState('');
 
   // Handle transaction submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -46,7 +50,7 @@ export const Finance: React.FC = () => {
   };
 
   // Calculations
-  const totalBalance = transactions.reduce((acc, tx) => {
+  const totalBalance = initialBalance + transactions.reduce((acc, tx) => {
     return tx.type === 'income' ? acc + tx.amount : acc - tx.amount;
   }, 0);
 
@@ -126,12 +130,51 @@ export const Finance: React.FC = () => {
         <div className="glass-panel p-6 rounded-2xl flex items-center justify-between shadow-sm relative overflow-hidden bg-white border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/40">
           <div>
             <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider">Total Wallet Balance</span>
-            <h3 className={`text-2xl font-bold mt-1 ${totalBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'}`}>
+            <h3 className={`text-2xl font-bold mt-1 ${totalBalance >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-455'}`}>
               {totalBalance >= 0 ? '+' : ''}₹{totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h3>
-            <p className="text-[10px] text-zinc-400 mt-1">Net sum of all cash & expenses</p>
+            
+            {isEditingInitial ? (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const val = parseFloat(initialInput);
+                  if (!isNaN(val)) {
+                    updateInitialBalance(val);
+                    showToast('Initial balance updated!', 'success');
+                  }
+                  setIsEditingInitial(false);
+                }}
+                className="flex items-center gap-1.5 mt-1"
+              >
+                <input
+                  type="number"
+                  step="0.01"
+                  value={initialInput}
+                  onChange={(e) => setInitialInput(e.target.value)}
+                  className="w-20 px-1.5 py-0.5 text-[10px] rounded border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none"
+                  autoFocus
+                />
+                <button type="submit" className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-850 text-white dark:bg-zinc-200 dark:text-zinc-900 font-bold hover:opacity-90">Save</button>
+                <button type="button" onClick={() => setIsEditingInitial(false)} className="text-[9px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">Cancel</button>
+              </form>
+            ) : (
+              <div className="flex items-center gap-1 mt-1 text-[10px] text-zinc-400">
+                <span>Initial starting cash: ₹{initialBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setInitialInput(initialBalance.toString());
+                    setIsEditingInitial(true);
+                  }} 
+                  className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 underline font-semibold transition-colors"
+                >
+                  (edit)
+                </button>
+              </div>
+            )}
           </div>
-          <div className={`p-3 rounded-2xl ${totalBalance >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-450'}`}>
+          <div className={`p-3 rounded-2xl ${totalBalance >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-455'}`}>
             {totalBalance >= 0 ? <ArrowUpRight size={22} /> : <ArrowDownLeft size={22} />}
           </div>
         </div>

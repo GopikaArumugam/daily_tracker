@@ -185,6 +185,8 @@ interface DashboardContextProps {
   transactions: Transaction[];
   addTransaction: (title: string, amount: number, type: 'expense' | 'income', category: Transaction['category'], date: string) => void;
   deleteTransaction: (id: string) => void;
+  initialBalance: number;
+  updateInitialBalance: (amount: number) => void;
   
   getDayStats: (dateStr: string) => DayStats;
   
@@ -209,6 +211,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [notes, setNotes] = useLocalStorage<Note[]>('dashboard_notes_v2', initialNotes);
   const [settings, setSettings] = useLocalStorage<Settings>('dashboard_settings_v2', initialSettings);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('dashboard_transactions_v2', []);
+  const [initialBalance, setInitialBalance] = useLocalStorage<number>('dashboard_initial_balance_v2', 0);
 
   // Automatic migration check to clear out old mock data
   useEffect(() => {
@@ -359,6 +362,10 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const deleteTransaction = (id: string) => {
     setTransactions(prev => prev.filter(tx => tx.id !== id));
+  };
+
+  const updateInitialBalance = (amount: number) => {
+    setInitialBalance(amount);
   };
 
   // Daily goals actions
@@ -730,7 +737,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       studyLogs,
       notes,
       settings,
-      transactions
+      transactions,
+      initialBalance
     };
     return JSON.stringify(payload, null, 2);
   };
@@ -748,6 +756,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (data.notes) setNotes(data.notes);
       if (data.settings) setSettings(data.settings);
       if (data.transactions) setTransactions(data.transactions);
+      if (data.initialBalance !== undefined) setInitialBalance(data.initialBalance);
       return true;
     } catch (e) {
       console.error('Failed to import data:', e);
@@ -766,6 +775,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setNotes(initialNotes);
     setSettings(initialSettings);
     setTransactions([]);
+    setInitialBalance(0);
   };
 
   return (
@@ -813,6 +823,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         transactions,
         addTransaction,
         deleteTransaction,
+        initialBalance,
+        updateInitialBalance,
         importData,
         exportData,
         resetToFactory

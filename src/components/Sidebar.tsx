@@ -11,7 +11,8 @@ import {
   Settings as SettingsIcon,
   Flame,
   BookOpen,
-  Wallet
+  Wallet,
+  Timer
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -32,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenCommandPalette, isSideba
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'calendar', label: 'Calendar', icon: CalendarDays },
     { id: 'finance', label: 'Finance', icon: Wallet },
+    { id: 'focus', label: 'Focus Mode', icon: Timer },
     { id: 'notes', label: 'Notes', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];

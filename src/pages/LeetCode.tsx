@@ -6,7 +6,7 @@ import { showToast } from '../components/ui/Toast';
 import { 
   ComposedChart,
   Bar, 
-  Line, 
+  Area,
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -280,6 +280,12 @@ export const LeetCode: React.FC = () => {
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={leetCodeTrendData} margin={{ top: 10, right: -5, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorTotalSolved" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#eab308" stopOpacity={0.25}/>
+                  <stop offset="95%" stopColor="#eab308" stopOpacity={0.01}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
               <XAxis dataKey="name" stroke={chartTextColor} fontSize={10} />
               <YAxis yAxisId="left" stroke={chartTextColor} fontSize={10} domain={['dataMin - 2', 'dataMax + 2']} />
@@ -295,7 +301,7 @@ export const LeetCode: React.FC = () => {
               />
               <Legend wrapperStyle={{ fontSize: '11px', marginTop: '10px' }} />
               <Bar yAxisId="right" dataKey="dailySolved" name="Daily Solved" fill="#f59e0b" radius={[3, 3, 0, 0]} maxBarSize={15} opacity={0.6} />
-              <Line yAxisId="left" type="monotone" dataKey="totalSolved" name="Cumulative Total" stroke="#eab308" strokeWidth={2.5} activeDot={{ r: 6 }} dot={{ strokeWidth: 2, r: 4 }} />
+              <Area yAxisId="left" type="monotone" dataKey="totalSolved" name="Cumulative Growth" stroke="#eab308" strokeWidth={2.5} fillOpacity={1} fill="url(#colorTotalSolved)" activeDot={{ r: 6 }} dot={{ strokeWidth: 2, r: 4 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
