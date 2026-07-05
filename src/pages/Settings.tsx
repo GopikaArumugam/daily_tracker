@@ -10,7 +10,8 @@ import {
   Upload,
   RotateCcw,
   Palette,
-  AlertTriangle
+  AlertTriangle,
+  Cloud
 } from 'lucide-react';
 
 export const Settings: React.FC = () => {
@@ -19,7 +20,14 @@ export const Settings: React.FC = () => {
     updateSettings, 
     exportData, 
     importData, 
-    resetToFactory 
+    resetToFactory,
+    supabaseUrl,
+    supabaseKey,
+    syncCode,
+    syncEnabled,
+    lastSyncedAt,
+    updateSyncConfig,
+    triggerPull
   } = useDashboard();
 
   const accent = settings.accentColor as AccentColor;
@@ -27,6 +35,32 @@ export const Settings: React.FC = () => {
   // Local state for raw JSON upload
   const [importJson, setImportJson] = useState('');
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+
+  // Supabase sync form inputs
+  const [inputUrl, setInputUrl] = useState(supabaseUrl);
+  const [inputKey, setInputKey] = useState(supabaseKey);
+  const [inputCode, setInputCode] = useState(syncCode);
+  const [inputEnabled, setInputEnabled] = useState(syncEnabled);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSaveConfig = () => {
+    updateSyncConfig(inputUrl, inputKey, inputCode, inputEnabled);
+    showToast('Sync settings saved locally!', 'success');
+  };
+
+  const handleSyncNow = async () => {
+    setIsSyncing(true);
+    showToast('Syncing with Supabase...', 'info');
+    
+    // Run pull (it will push if no remote data, otherwise pull remote changes)
+    const success = await triggerPull();
+    if (success) {
+      showToast('Cloud database sync complete!', 'success');
+    } else {
+      showToast('Sync failed. Please verify your keys and table.', 'error');
+    }
+    setIsSyncing(false);
+  };
 
   const colorsList: { name: AccentColor; label: string; bgClass: string }[] = [
     { name: 'green', label: 'GitHub Green', bgClass: 'bg-emerald-500' },
@@ -221,6 +255,107 @@ export const Settings: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+
+          {/* Cloud Sync (Supabase) */}
+          <div className="glass-panel p-5 rounded-2xl space-y-5 bg-white border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900/40">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Cloud size={14} className={getAccentColor(accent, 'text')} />
+                <span>Cloud Synchronization (Supabase)</span>
+              </div>
+              {syncEnabled && (
+                <span className="flex items-center gap-1 text-[9px] bg-emerald-500/10 text-emerald-550 px-1.5 py-0.5 rounded-full font-bold uppercase dark:text-emerald-400">
+                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                  Active
+                </span>
+              )}
+            </h3>
+
+            <div className="space-y-4">
+              <div className="p-3 text-[10px] text-zinc-550 bg-zinc-50 border border-zinc-200/60 dark:bg-zinc-950/40 dark:border-zinc-800 rounded-xl leading-relaxed">
+                🧑‍💻 <strong>Privacy First:</strong> Your database keys stay inside your own browser and are never sent to external servers. To link devices (e.g. laptop and phone), enter the exact same Supabase details and <strong>Sync Code</strong> on both!
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1 col-span-1">
+                  <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Supabase URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://xyz.supabase.co"
+                    value={inputUrl}
+                    onChange={(e) => setInputUrl(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-zinc-700 bg-zinc-50 border-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-750"
+                  />
+                </div>
+
+                <div className="space-y-1 col-span-1">
+                  <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Anon API Key</label>
+                  <input
+                    type="password"
+                    placeholder="Paste anon key..."
+                    value={inputKey}
+                    onChange={(e) => setInputKey(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-zinc-700 bg-zinc-50 border-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-750"
+                  />
+                </div>
+
+                <div className="space-y-1 col-span-1">
+                  <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Sync Code (Device Link Password)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. my-private-sync-123"
+                    value={inputCode}
+                    onChange={(e) => setInputCode(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-zinc-700 bg-zinc-50 border-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-zinc-750"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-5 col-span-1">
+                  <input
+                    id="enable-sync-toggle"
+                    type="checkbox"
+                    checked={inputEnabled}
+                    onChange={(e) => setInputEnabled(e.target.checked)}
+                    className="w-4 h-4 accent-purple-500 rounded border-zinc-850 bg-zinc-950 dark:border-zinc-800 dark:bg-zinc-950"
+                  />
+                  <label htmlFor="enable-sync-toggle" className="text-xs text-zinc-650 dark:text-zinc-400 font-semibold cursor-pointer select-none">
+                    Enable Automatic Sync
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/60">
+                <div className="text-[10px] text-zinc-550">
+                  {lastSyncedAt ? (
+                    <span>Last Synced: <strong className="text-zinc-750 dark:text-zinc-300">{lastSyncedAt}</strong></span>
+                  ) : (
+                    <span>Cloud sync not configured yet.</span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={handleSaveConfig}
+                    className="px-3.5 py-1.5 rounded-xl border text-xs font-bold bg-zinc-50 border-zinc-200 text-zinc-750 hover:bg-zinc-100 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-350 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+                  >
+                    Save Config
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSyncing}
+                    onClick={handleSyncNow}
+                    className={`px-4 py-1.5 rounded-xl ${getAccentColor(accent, 'bg')} text-zinc-950 font-bold hover:opacity-90 active:scale-95 transition-all text-xs flex items-center gap-1 shrink-0 ${
+                      isSyncing ? 'opacity-40 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {isSyncing ? 'Syncing...' : 'Sync Now'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

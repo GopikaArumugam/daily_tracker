@@ -188,6 +188,15 @@ interface DashboardContextProps {
   initialBalance: number;
   updateInitialBalance: (amount: number) => void;
   
+  supabaseUrl: string;
+  supabaseKey: string;
+  syncCode: string;
+  syncEnabled: boolean;
+  lastSyncedAt: string;
+  updateSyncConfig: (url: string, key: string, code: string, enabled: boolean) => void;
+  triggerPush: () => Promise<boolean>;
+  triggerPull: () => Promise<boolean>;
+
   getDayStats: (dateStr: string) => DayStats;
   
   importData: (jsonData: string) => boolean;
@@ -212,6 +221,12 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [settings, setSettings] = useLocalStorage<Settings>('dashboard_settings_v2', initialSettings);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('dashboard_transactions_v2', []);
   const [initialBalance, setInitialBalance] = useLocalStorage<number>('dashboard_initial_balance_v2', 0);
+
+  const [supabaseUrl, setSupabaseUrl] = useLocalStorage<string>('dashboard_supabase_url', '');
+  const [supabaseKey, setSupabaseKey] = useLocalStorage<string>('dashboard_supabase_key', '');
+  const [syncCode, setSyncCode] = useLocalStorage<string>('dashboard_sync_code', '');
+  const [syncEnabled, setSyncEnabled] = useLocalStorage<boolean>('dashboard_sync_enabled', false);
+  const [lastSyncedAt, setLastSyncedAt] = useLocalStorage<string>('dashboard_last_synced_at', '');
 
   // Automatic migration check to clear out old mock data
   useEffect(() => {
@@ -725,6 +740,144 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   };
 
+  // Update sync config
+  const updateSyncConfig = (url: string, key: string, code: string, enabled: boolean) => {
+    setSupabaseUrl(url);
+    setSupabaseKey(key);
+    setSyncCode(code);
+    setSyncEnabled(enabled);
+  };
+
+  // Push local storage to Supabase
+  const triggerPush = async (): Promise<boolean> => {
+    if (!supabaseUrl || !supabaseKey || !syncCode) return false;
+    const cleanUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+    
+    const payload = {
+      tasks,
+      dailyGoals,
+      weeklyGoals,
+      customGoals,
+      dailyGoalsHistory,
+      leetCodeStats,
+      studyLogs,
+      notes,
+      settings,
+      transactions,
+      initialBalance,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    try {
+      const response = await fetch(`${cleanUrl}/rest/v1/user_sync`, {
+        method: 'POST',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          id: syncCode,
+          data: payload,
+          updated_at: new Date().toISOString()
+        })
+      });
+      
+      if (response.ok) {
+        setLastSyncedAt(new Date().toLocaleString());
+        return true;
+      } else {
+        const errText = await response.text();
+        console.error('Supabase Push Failed:', errText);
+        return false;
+      }
+    } catch (e) {
+      console.error('Supabase Push Error:', e);
+      return false;
+    }
+  };
+
+  // Pull from Supabase
+  const triggerPull = async (): Promise<boolean> => {
+    if (!supabaseUrl || !supabaseKey || !syncCode) return false;
+    const cleanUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+    
+    try {
+      const response = await fetch(`${cleanUrl}/rest/v1/user_sync?id=eq.${syncCode}`, {
+        method: 'GET',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Supabase Pull Failed:', await response.text());
+        return false;
+      }
+      
+      const rows = await response.json();
+      if (!rows || rows.length === 0) {
+        // First time sync, push local data up
+        console.log('No cloud data found. Performing initial push.');
+        await triggerPush();
+        return true;
+      }
+      
+      const remoteData = rows[0].data;
+      if (remoteData) {
+        if (remoteData.tasks) setTasks(remoteData.tasks);
+        if (remoteData.dailyGoals) setDailyGoals(remoteData.dailyGoals);
+        if (remoteData.weeklyGoals) setWeeklyGoals(remoteData.weeklyGoals);
+        if (remoteData.customGoals) setCustomGoals(remoteData.customGoals);
+        if (remoteData.dailyGoalsHistory) setDailyGoalsHistory(remoteData.dailyGoalsHistory);
+        if (remoteData.leetCodeStats) setLeetCodeStats(remoteData.leetCodeStats);
+        if (remoteData.studyLogs) setStudyLogs(remoteData.studyLogs);
+        if (remoteData.notes) setNotes(remoteData.notes);
+        if (remoteData.settings) setSettings(remoteData.settings);
+        if (remoteData.transactions) setTransactions(remoteData.transactions);
+        if (remoteData.initialBalance !== undefined) setInitialBalance(remoteData.initialBalance);
+        
+        setLastSyncedAt(new Date().toLocaleString());
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Supabase Pull Error:', e);
+      return false;
+    }
+  };
+
+  // 1. Initial Pull on Mount
+  useEffect(() => {
+    if (syncEnabled && supabaseUrl && supabaseKey && syncCode) {
+      triggerPull();
+    }
+  }, []);
+
+  // 2. Debounced auto-push on local changes
+  useEffect(() => {
+    if (!syncEnabled || !supabaseUrl || !supabaseKey || !syncCode) return;
+    
+    const debounceTimer = setTimeout(() => {
+      triggerPush();
+    }, 2500);
+    
+    return () => clearTimeout(debounceTimer);
+  }, [
+    tasks,
+    dailyGoals,
+    weeklyGoals,
+    customGoals,
+    leetCodeStats,
+    studyLogs,
+    notes,
+    transactions,
+    initialBalance,
+    syncEnabled
+  ]);
+
   // Export / Import data
   const exportData = () => {
     const payload = {
@@ -825,6 +978,14 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteTransaction,
         initialBalance,
         updateInitialBalance,
+        supabaseUrl,
+        supabaseKey,
+        syncCode,
+        syncEnabled,
+        lastSyncedAt,
+        updateSyncConfig,
+        triggerPush,
+        triggerPull,
         importData,
         exportData,
         resetToFactory
