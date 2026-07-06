@@ -827,6 +827,20 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       
       const remoteData = rows[0].data;
       if (remoteData) {
+        // SAFETY CHECK: If local storage has user data, but remote database is empty
+        // (e.g. has tasks/transactions locally but none on the cloud),
+        // do NOT overwrite local data with empty cloud data. Instead, push local data!
+        const localHasData = tasks.length > 0 || transactions.length > 0 || studyLogs.length > 0;
+        const remoteHasData = (remoteData.tasks && remoteData.tasks.length > 0) || 
+                              (remoteData.transactions && remoteData.transactions.length > 0) || 
+                              (remoteData.studyLogs && remoteData.studyLogs.length > 0);
+                              
+        if (localHasData && !remoteHasData) {
+          console.warn('Local storage has data but cloud database is empty. Protecting local data by pushing to cloud.');
+          await triggerPush();
+          return true;
+        }
+
         if (remoteData.tasks) setTasks(remoteData.tasks);
         if (remoteData.dailyGoals) setDailyGoals(remoteData.dailyGoals);
         if (remoteData.weeklyGoals) setWeeklyGoals(remoteData.weeklyGoals);
