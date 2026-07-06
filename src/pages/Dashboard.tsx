@@ -191,24 +191,24 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Streaks Widget */}
-        <div className="flex gap-4 z-10">
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border bg-zinc-50 border-zinc-200 dark:bg-zinc-950/40 dark:border-zinc-800">
-            <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500">
-              <Flame size={16} fill="currentColor" />
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-3 w-full sm:w-auto z-10">
+          <div className="flex items-center justify-center sm:justify-start gap-2.5 px-3 py-2 rounded-xl border bg-zinc-50 border-zinc-200 dark:bg-zinc-950/40 dark:border-zinc-800">
+            <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-500 shrink-0">
+              <Flame size={15} fill="currentColor" />
             </div>
-            <div>
-              <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Current Streak</div>
-              <div className="text-base font-bold text-zinc-700 dark:text-zinc-200">{leetCodeStats.currentStreak} days</div>
+            <div className="min-w-0">
+              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold truncate">Current Streak</div>
+              <div className="text-sm font-bold text-zinc-700 dark:text-zinc-200 truncate">{leetCodeStats.currentStreak} days</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl border bg-zinc-50 border-zinc-200 dark:bg-zinc-950/40 dark:border-zinc-800">
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500">
-              <Award size={16} />
+          <div className="flex items-center justify-center sm:justify-start gap-2.5 px-3 py-2 rounded-xl border bg-zinc-50 border-zinc-200 dark:bg-zinc-950/40 dark:border-zinc-800">
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 shrink-0">
+              <Award size={15} />
             </div>
-            <div>
-              <div className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Longest Streak</div>
-              <div className="text-base font-bold text-zinc-700 dark:text-zinc-200">{leetCodeStats.longestStreak} days</div>
+            <div className="min-w-0">
+              <div className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold truncate">Longest Streak</div>
+              <div className="text-sm font-bold text-zinc-700 dark:text-zinc-200 truncate">{leetCodeStats.longestStreak} days</div>
             </div>
           </div>
         </div>
