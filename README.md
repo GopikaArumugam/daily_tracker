@@ -89,6 +89,40 @@ npm run build
 
 ---
 
+## 🚀 Git & Deployment Workflow
+
+DevZen is set up with automatic deployment via **Vercel**. Every time you push changes to your GitHub repository, Vercel automatically detects the commit, recompiles the application, and deploys it live.
+
+### How to push local updates to your live site:
+
+1. **Check status of changes**:
+   Make sure you are in the `daily-tracker` folder, and check which files were modified:
+   ```bash
+   git status
+   ```
+
+2. **Stage your changes**:
+   Add all modified or new files to the staging area:
+   ```bash
+   git add .
+   ```
+
+3. **Commit your changes**:
+   Create a commit with a descriptive message of what you updated:
+   ```bash
+   git commit -m "feat: customize style and add sync configurations"
+   ```
+
+4. **Push to GitHub**:
+   Push the changes to your main branch. Vercel will immediately start building the new deployment in the background:
+   ```bash
+   git push origin main
+   ```
+
+Within 30–45 seconds, your Vercel URL (e.g. `daily-tracker-mauve-six.vercel.app`) will be updated automatically!
+
+---
+
 ## 🔄 How to Set Up Supabase Cloud Sync
 
 To sync your laptop and phone automatically in real-time, configure your own private database in 3 quick steps:
