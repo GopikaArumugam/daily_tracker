@@ -12,7 +12,8 @@ import {
   Flame,
   BookOpen,
   Wallet,
-  Timer
+  Timer,
+  Compass
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenCommandPalette, isSideba
     { id: 'calendar', label: 'Calendar', icon: CalendarDays },
     { id: 'finance', label: 'Finance', icon: Wallet },
     { id: 'focus', label: 'Focus Mode', icon: Timer },
+    { id: 'roadmaps', label: 'Learning Paths', icon: Compass },
     { id: 'notes', label: 'Notes', icon: BookOpen },
     { id: 'settings', label: 'Settings', icon: SettingsIcon },
   ];

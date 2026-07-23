@@ -79,6 +79,29 @@ export interface Note {
   date: string;
 }
 
+export interface RoadmapTopic {
+  id: string;
+  name: string;
+  completed: boolean;
+  notes?: string;
+}
+
+export interface RoadmapMilestone {
+  id: string;
+  title: string;
+  targetWeek: string;
+  topics: RoadmapTopic[];
+}
+
+export interface Roadmap {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  milestones: RoadmapMilestone[];
+  createdAt: string;
+}
+
 export interface Settings {
   theme: 'dark' | 'light';
   accentColor: 'green' | 'blue' | 'purple' | 'rose' | 'amber';
@@ -124,6 +147,107 @@ const initialLeetCodeStats: LeetCodeStats = {
 const initialStudyLogs: StudyLog[] = [];
 
 const initialNotes: Note[] = [];
+
+const initialRoadmaps: Roadmap[] = [
+  {
+    id: 'roadmap-ml',
+    title: '🧠 Machine Learning & AI',
+    description: 'Master core ML foundations, algorithms, architectures, and practical PyTorch workflows.',
+    icon: 'Brain',
+    createdAt: new Date().toISOString(),
+    milestones: [
+      {
+        id: 'ml-w1',
+        title: 'Week 1: Math Foundations',
+        targetWeek: 'Week 1',
+        topics: [
+          { id: 'ml-w1-t1', name: 'Linear Algebra: Vector spaces, SVD & Eigenvalues', completed: false },
+          { id: 'ml-w1-t2', name: 'Calculus: Gradients, Jacobians & Optimizers', completed: false },
+          { id: 'ml-w1-t3', name: 'Probability: Bayes Theorem & Likelihood Estimation', completed: false }
+        ]
+      },
+      {
+        id: 'ml-w2',
+        title: 'Week 2: Classical Algorithms',
+        targetWeek: 'Week 2',
+        topics: [
+          { id: 'ml-w2-t1', name: 'Regression models & Cost functions', completed: false },
+          { id: 'ml-w2-t2', name: 'Tree methods: Decision Trees, Random Forests, XGBoost', completed: false },
+          { id: 'ml-w2-t3', name: 'Classification: SVMs, Logistic Regression, Naive Bayes', completed: false }
+        ]
+      },
+      {
+        id: 'ml-w3',
+        title: 'Week 3: Deep Learning',
+        targetWeek: 'Week 3',
+        topics: [
+          { id: 'ml-w3-t1', name: 'Neural network architectures & Backpropagation', completed: false },
+          { id: 'ml-w3-t2', name: 'PyTorch tensors, datasets, and training loops', completed: false },
+          { id: 'ml-w3-t3', name: 'CNNs for Vision & RNNs/LSTMs for Sequence data', completed: false }
+        ]
+      },
+      {
+        id: 'ml-w4',
+        title: 'Week 4: Modern AI & LLMs',
+        targetWeek: 'Week 4',
+        topics: [
+          { id: 'ml-w4-t1', name: 'Transformer architectures: Self-Attention & MH-Attention', completed: false },
+          { id: 'ml-w4-t2', name: 'Fine-tuning LLMs with LoRA / QLoRA', completed: false },
+          { id: 'ml-w4-t3', name: 'Retrieval Augmented Generation (RAG) deployment', completed: false }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'roadmap-quant',
+    title: '📊 Quantitative Finance',
+    description: 'Learn stochastic calculus, time series forecasting, risk modeling, and backtesting systems.',
+    icon: 'TrendingUp',
+    createdAt: new Date().toISOString(),
+    milestones: [
+      {
+        id: 'quant-w1',
+        title: 'Week 1: Quantitative Mathematics',
+        targetWeek: 'Week 1',
+        topics: [
+          { id: 'quant-w1-t1', name: 'Stochastic processes & Brownian motion', completed: false },
+          { id: 'quant-w1-t2', name: 'Black-Scholes-Merton option pricing formula', completed: false },
+          { id: 'quant-w1-t3', name: 'Monte Carlo simulations for pricing derivatives', completed: false }
+        ]
+      },
+      {
+        id: 'quant-w2',
+        title: 'Week 2: Time Series & Models',
+        targetWeek: 'Week 2',
+        topics: [
+          { id: 'quant-w2-t1', name: 'Stationarity, Autocorrelation, and Unit root tests', completed: false },
+          { id: 'quant-w2-t2', name: 'ARIMA, SARIMA, and seasonal decomposition', completed: false },
+          { id: 'quant-w2-t3', name: 'Modeling volatility using GARCH models', completed: false }
+        ]
+      },
+      {
+        id: 'quant-w3',
+        title: 'Week 3: Portfolio & Risk Management',
+        targetWeek: 'Week 3',
+        topics: [
+          { id: 'quant-w3-t1', name: 'Mean-Variance optimization & Efficient Frontier', completed: false },
+          { id: 'quant-w3-t2', name: 'Value at Risk (VaR) & Expected Shortfall (ES)', completed: false },
+          { id: 'quant-w3-t3', name: 'Factor models: Fama-French 3-Factor model', completed: false }
+        ]
+      },
+      {
+        id: 'quant-w4',
+        title: 'Week 4: Algorithmic Systems',
+        targetWeek: 'Week 4',
+        topics: [
+          { id: 'quant-w4-t1', name: 'Mean-reversion & Momentum signal trading algorithms', completed: false },
+          { id: 'quant-w4-t2', name: 'Backtesting with historical data and transaction costs', completed: false },
+          { id: 'quant-w4-t3', name: 'Execution algorithms: TWAP, VWAP, and Limit orders', completed: false }
+        ]
+      }
+    ]
+  }
+];
 
 const initialSettings: Settings = {
   theme: 'light',
@@ -187,6 +311,16 @@ interface DashboardContextProps {
   deleteTransaction: (id: string) => void;
   initialBalance: number;
   updateInitialBalance: (amount: number) => void;
+
+  roadmaps: Roadmap[];
+  addRoadmap: (title: string, description: string, icon: string) => void;
+  updateRoadmap: (roadmapId: string, title: string, description: string) => void;
+  deleteRoadmap: (roadmapId: string) => void;
+  addMilestone: (roadmapId: string, title: string, targetWeek: string) => void;
+  deleteMilestone: (roadmapId: string, milestoneId: string) => void;
+  addTopic: (roadmapId: string, milestoneId: string, name: string) => void;
+  deleteTopic: (roadmapId: string, milestoneId: string, topicId: string) => void;
+  toggleTopicCompleted: (roadmapId: string, milestoneId: string, topicId: string) => void;
   
   supabaseUrl: string;
   supabaseKey: string;
@@ -221,6 +355,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [settings, setSettings] = useLocalStorage<Settings>('dashboard_settings_v2', initialSettings);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('dashboard_transactions_v2', []);
   const [initialBalance, setInitialBalance] = useLocalStorage<number>('dashboard_initial_balance_v2', 0);
+  const [roadmaps, setRoadmaps] = useLocalStorage<Roadmap[]>('dashboard_roadmaps_v2', initialRoadmaps);
 
   const [supabaseUrl, setSupabaseUrl] = useLocalStorage<string>('dashboard_supabase_url', '');
   const [supabaseKey, setSupabaseKey] = useLocalStorage<string>('dashboard_supabase_key', '');
@@ -381,6 +516,136 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const updateInitialBalance = (amount: number) => {
     setInitialBalance(amount);
+  };
+
+  // Roadmap actions
+  const addRoadmap = (title: string, description: string, icon: string) => {
+    const newRoadmap: Roadmap = {
+      id: 'roadmap_' + Math.random().toString(36).substr(2, 9),
+      title: title.trim(),
+      description: description.trim(),
+      icon,
+      milestones: [],
+      createdAt: new Date().toISOString()
+    };
+    setRoadmaps(prev => [...prev, newRoadmap]);
+  };
+
+  const updateRoadmap = (roadmapId: string, title: string, description: string) => {
+    setRoadmaps(prev => prev.map(rm => {
+      if (rm.id === roadmapId) {
+        return {
+          ...rm,
+          title: title.trim(),
+          description: description.trim()
+        };
+      }
+      return rm;
+    }));
+  };
+
+  const deleteRoadmap = (roadmapId: string) => {
+    setRoadmaps(prev => prev.filter(rm => rm.id !== roadmapId));
+  };
+
+  const addMilestone = (roadmapId: string, title: string, targetWeek: string) => {
+    const newMilestone: RoadmapMilestone = {
+      id: 'ms_' + Math.random().toString(36).substr(2, 9),
+      title: title.trim(),
+      targetWeek: targetWeek.trim(),
+      topics: []
+    };
+    setRoadmaps(prev => prev.map(rm => {
+      if (rm.id === roadmapId) {
+        return {
+          ...rm,
+          milestones: [...rm.milestones, newMilestone]
+        };
+      }
+      return rm;
+    }));
+  };
+
+  const deleteMilestone = (roadmapId: string, milestoneId: string) => {
+    setRoadmaps(prev => prev.map(rm => {
+      if (rm.id === roadmapId) {
+        return {
+          ...rm,
+          milestones: rm.milestones.filter(ms => ms.id !== milestoneId)
+        };
+      }
+      return rm;
+    }));
+  };
+
+  const addTopic = (roadmapId: string, milestoneId: string, name: string) => {
+    const newTopic: RoadmapTopic = {
+      id: 'topic_' + Math.random().toString(36).substr(2, 9),
+      name: name.trim(),
+      completed: false
+    };
+    setRoadmaps(prev => prev.map(rm => {
+      if (rm.id === roadmapId) {
+        return {
+          ...rm,
+          milestones: rm.milestones.map(ms => {
+            if (ms.id === milestoneId) {
+              return {
+                ...ms,
+                topics: [...ms.topics, newTopic]
+              };
+            }
+            return ms;
+          })
+        };
+      }
+      return rm;
+    }));
+  };
+
+  const deleteTopic = (roadmapId: string, milestoneId: string, topicId: string) => {
+    setRoadmaps(prev => prev.map(rm => {
+      if (rm.id === roadmapId) {
+        return {
+          ...rm,
+          milestones: rm.milestones.map(ms => {
+            if (ms.id === milestoneId) {
+              return {
+                ...ms,
+                topics: ms.topics.filter(t => t.id !== topicId)
+              };
+            }
+            return ms;
+          })
+        };
+      }
+      return rm;
+    }));
+  };
+
+  const toggleTopicCompleted = (roadmapId: string, milestoneId: string, topicId: string) => {
+    setRoadmaps(prev => prev.map(rm => {
+      if (rm.id === roadmapId) {
+        return {
+          ...rm,
+          milestones: rm.milestones.map(ms => {
+            if (ms.id === milestoneId) {
+              return {
+                ...ms,
+                topics: ms.topics.map(t => {
+                  if (t.id === topicId) {
+                    return { ...t, completed: !t.completed };
+                  }
+                  return t;
+                })
+              };
+            }
+            return ms;
+          })
+        };
+      }
+      return rm;
+    }));
   };
 
   // Daily goals actions
@@ -765,6 +1030,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       settings,
       transactions,
       initialBalance,
+      roadmaps,
       lastUpdated: new Date().toISOString()
     };
     
@@ -830,10 +1096,11 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         // SAFETY CHECK: If local storage has user data, but remote database is empty
         // (e.g. has tasks/transactions locally but none on the cloud),
         // do NOT overwrite local data with empty cloud data. Instead, push local data!
-        const localHasData = tasks.length > 0 || transactions.length > 0 || studyLogs.length > 0;
+        const localHasData = tasks.length > 0 || transactions.length > 0 || studyLogs.length > 0 || roadmaps.length > 0;
         const remoteHasData = (remoteData.tasks && remoteData.tasks.length > 0) || 
                               (remoteData.transactions && remoteData.transactions.length > 0) || 
-                              (remoteData.studyLogs && remoteData.studyLogs.length > 0);
+                              (remoteData.studyLogs && remoteData.studyLogs.length > 0) ||
+                              (remoteData.roadmaps && remoteData.roadmaps.length > 0);
                               
         if (localHasData && !remoteHasData) {
           console.warn('Local storage has data but cloud database is empty. Protecting local data by pushing to cloud.');
@@ -852,6 +1119,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (remoteData.settings) setSettings(remoteData.settings);
         if (remoteData.transactions) setTransactions(remoteData.transactions);
         if (remoteData.initialBalance !== undefined) setInitialBalance(remoteData.initialBalance);
+        if (remoteData.roadmaps) setRoadmaps(remoteData.roadmaps);
         
         setLastSyncedAt(new Date().toLocaleString());
         return true;
@@ -889,6 +1157,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     notes,
     transactions,
     initialBalance,
+    roadmaps,
     syncEnabled
   ]);
 
@@ -905,7 +1174,8 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       notes,
       settings,
       transactions,
-      initialBalance
+      initialBalance,
+      roadmaps
     };
     return JSON.stringify(payload, null, 2);
   };
@@ -924,6 +1194,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (data.settings) setSettings(data.settings);
       if (data.transactions) setTransactions(data.transactions);
       if (data.initialBalance !== undefined) setInitialBalance(data.initialBalance);
+      if (data.roadmaps) setRoadmaps(data.roadmaps);
       return true;
     } catch (e) {
       console.error('Failed to import data:', e);
@@ -943,6 +1214,7 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setSettings(initialSettings);
     setTransactions([]);
     setInitialBalance(0);
+    setRoadmaps(initialRoadmaps);
   };
 
   return (
@@ -992,6 +1264,15 @@ export const DashboardProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteTransaction,
         initialBalance,
         updateInitialBalance,
+        roadmaps,
+        addRoadmap,
+        updateRoadmap,
+        deleteRoadmap,
+        addMilestone,
+        deleteMilestone,
+        addTopic,
+        deleteTopic,
+        toggleTopicCompleted,
         supabaseUrl,
         supabaseKey,
         syncCode,

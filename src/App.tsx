@@ -17,6 +17,7 @@ import { Analytics } from './pages/Analytics';
 import { Calendar } from './pages/Calendar';
 import { Finance } from './pages/Finance';
 import { Focus } from './pages/Focus';
+import { Roadmaps } from './pages/Roadmaps';
 import { Notes } from './pages/Notes';
 import { Settings } from './pages/Settings';
 
@@ -87,6 +88,8 @@ const AppContent: React.FC = () => {
         return <Finance />;
       case 'focus':
         return <Focus />;
+      case 'roadmaps':
+        return <Roadmaps />;
       case 'notes':
         return <Notes />;
       case 'settings':
